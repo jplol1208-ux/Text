@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Test de autoexploración: neurodivergencia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{--bg:#eef2f7;--card:#fff;--ink:#1c2740;--mute:#5b6784;--line:#d5dcea;--acc:#0e7c86;--acc-ink:#fff;--sel:#d9f0f2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121a2b;--card:#1b2540;--ink:#eaf0ff;--mute:#9aa8c9;--line:#2c3a5c;--acc:#4cc3cd;--acc-ink:#0b1626;--sel:#1d3b4f}}
+:root[data-theme="dark"]{--bg:#121a2b;--card:#1b2540;--ink:#eaf0ff;--mute:#9aa8c9;--line:#2c3a5c;--acc:#4cc3cd;--acc-ink:#0b1626;--sel:#1d3b4f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:18px;line-height:1.5}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.6rem;line-height:1.2;margin:8px 0 12px}
+h2{font-size:1.3rem;line-height:1.3;margin:0 0 20px}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+.note{font-size:.9rem;color:var(--mute);border-left:3px solid var(--acc);padding-left:12px;margin:18px 0}
+button{font:inherit;cursor:pointer;min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.primary{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:700}
+.opt{display:block;width:100%;text-align:left;margin-bottom:10px}
+.opt.on{background:var(--sel);border-color:var(--acc);font-weight:700}
+.bar{height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin-bottom:8px}
+.bar>i{display:block;height:100%;background:var(--acc);width:0;transition:width .3s}
+.meta{display:flex;justify-content:space-between;color:var(--mute);font-size:.9rem;margin-bottom:16px}
+.nav{display:flex;gap:10px;margin-top:8px}
+.nav button{flex:1}
+.row{margin:16px 0}
+.row b{display:flex;justify-content:space-between}
+.hide{display:none}
+@media (prefers-reduced-motion:reduce){.bar>i{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<section id="intro" class="card">
+  <h1>Test de autoexploración: neurodivergencia</h1>
+  <p>20 preguntas sobre atención, sensibilidad sensorial, rutinas y vida social. Toma unos 5 minutos. Responde pensando en cómo eres normalmente, no en un día concreto.</p>
+  <p class="note"><b>Importante:</b> esta es una herramienta educativa de ejemplo. No diagnostica ni confirma ninguna condición. Solo un profesional de salud calificado puede evaluar TDAH, autismo u otras neurodivergencias.</p>
+  <button class="primary" id="start" style="width:100%">Comenzar</button>
+</section>
+
+<section id="quiz" class="card hide" aria-live="polite">
+  <div class="bar"><i id="fill"></i></div>
+  <div class="meta"><span id="count"></span><span id="area"></span></div>
+  <h2 id="q"></h2>
+  <div id="opts"></div>
+  <div class="nav">
+    <button id="back">Atrás</button>
+    <button id="next" class="primary">Siguiente</button>
+  </div>
+</section>
+
+<section id="result" class="card hide">
+  <h1>Tus resultados</h1>
+  <p id="summary"></p>
+  <div id="bars"></div>
+  <p class="note">Estos resultados reflejan tus respuestas de hoy y no constituyen un diagnóstico. Si varias áreas te resultan altas y afectan tu día a día, considera hablar con un psicólogo, psiquiatra o neuropsicólogo. Puedes mostrarles este resumen como punto de partida.</p>
+  <div class="nav">
+    <button id="again">Repetir test</button>
+    <button id="copy" class="primary">Copiar resumen</button>
+  </div>
+</section>
+</main>
+
+<script>
+var AREAS=["Atención y organización","Sensorial","Rutinas e intereses","Social y emocional"];
+var Q=[
+[0,"Me cuesta mantener la atención en tareas largas o poco interesantes."],
+[0,"Empiezo cosas nuevas y me cuesta terminarlas."],
+[0,"Pierdo objetos o me olvido de cosas importantes con frecuencia."],
+[0,"Me distraigo fácilmente con ruidos, pensamientos o lo que pasa alrededor."],
+[0,"Cuando algo me apasiona, puedo concentrarme horas y olvidar el tiempo."],
+[1,"Ciertos sonidos, luces u olores me resultan muy molestos o abrumadores."],
+[1,"Me incomodan algunas texturas de ropa, etiquetas o alimentos."],
+[1,"Los lugares con mucha gente o ruido me agotan rápidamente."],
+[1,"Muevo las manos, las piernas o algún objeto sin darme cuenta para concentrarme."],
+[1,"Necesito estar en silencio o con poca estimulación para trabajar bien."],
+[2,"Me siento mal cuando cambian mis planes o mi rutina sin aviso."],
+[2,"Tengo intereses muy intensos y me gusta saber todo sobre ellos."],
+[2,"Prefiero hacer las cosas siempre de la misma manera."],
+[2,"Repito frases, movimientos o hábitos porque me tranquilizan."],
+[2,"Me cuesta cambiar de una actividad a otra."],
+[3,"En conversaciones, a veces no sé cuándo me toca hablar o cuándo parar."],
+[3,"Me cuesta entender ironías, dobles sentidos o lo que no se dice de forma directa."],
+[3,"Después de socializar necesito mucho tiempo a solas para recuperarme."],
+[3,"Mis emociones a veces son muy intensas y me cuesta regularlas."],
+[3,"Siento que “actúo” o imito a otros para encajar."]
+];
+var OPTS=["Nunca","Rara vez","A veces","Frecuentemente","Casi siempre"];
+var ans=[],i=0;
+var $=function(id){return document.getElementById(id)};
+function show(id){["intro","quiz","result"].forEach(function(s){$(s).classList.toggle("hide",s!==id)});window.scrollTo(0,0)}
+function render(){
+  $("q").textContent=Q[i][1];
+  $("count").textContent="Pregunta "+(i+1)+" de "+Q.length;
+  $("area").textContent=AREAS[Q[i][0]];
+  $("fill").style.width=((i)/Q.length*100)+"%";
+  var h="";
+  OPTS.forEach(function(o,v){h+='<button class="opt'+(ans[i]===v?' on':'')+'" data-v="'+v+'">'+o+'</button>'});
+  $("opts").innerHTML=h;
+  $("back").disabled=i===0;
+  $("next").disabled=ans[i]===undefined;
+  $("next").textContent=i===Q.length-1?"Ver resultados":"Siguiente";
+}
+$("opts").addEventListener("click",function(e){
+  var b=e.target.closest(".opt");if(!b)return;
+  ans[i]=+b.dataset.v;render();
+});
+$("start").onclick=function(){ans=[];i=0;show("quiz");render()};
+$("back").onclick=function(){if(i>0){i--;render()}};
+$("next").onclick=function(){
+  if(ans[i]===undefined)return;
+  if(i<Q.length-1){i++;render()}else{results()}
+};
+var text="";
+function results(){
+  var sum=[0,0,0,0],n=[0,0,0,0];
+  Q.forEach(function(q,k){sum[q[0]]+=ans[k];n[q[0]]++});
+  var h="",lines=[],hi=0;
+  AREAS.forEach(function(a,k){
+    var p=Math.round(sum[k]/(n[k]*4)*100);
+    var lvl=p>=66?"alto":p>=40?"medio":"bajo";
+    if(p>=66)hi++;
+    h+='<div class="row"><b><span>'+a+'</span><span>'+p+'% ('+lvl+')</span></b><div class="bar"><i style="width:'+p+'%"></i></div></div>';
+    lines.push(a+": "+p+"% ("+lvl+")");
+  });
+  var s=hi===0?"Ninguna área muestra una puntuación alta. Aun así, si algo te preocupa, consultarlo con un profesional siempre es válido.":
+    hi===1?"Una área muestra una puntuación alta. Puede ser útil observarla y comentarla con un profesional.":
+    "Varias áreas muestran puntuaciones altas. Sería recomendable comentar estos resultados con un profesional de salud.";
+  $("summary").textContent=s;$("bars").innerHTML=h;
+  text="Test de autoexploración (no diagnóstico)\n"+lines.join("\n");
+  $("fill").style.width="100%";show("result");
+}
+$("again").onclick=function(){show("intro")};
+$("copy").onclick=function(){
+  var b=$("copy");
+  function ok(){b.textContent="Copiado";setTimeout(function(){b.textContent="Copiar resumen"},1800)}
+  try{navigator.clipboard.writeText(text).then(ok,ok)}catch(e){ok()}
+};
+</script>
+</body>
+</html>
